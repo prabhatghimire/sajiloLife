@@ -18,7 +18,7 @@ export const API_CONFIG = {
   // For physical device - use your computer's IP address
   // Replace with your actual IP address
   production: {
-    baseUrl: 'http://192.168.1.77:8000/api', // Your computer's IP
+    baseUrl: 'http://192.168.1.81:8000/api', // Your computer's IP
   },
 };
 
