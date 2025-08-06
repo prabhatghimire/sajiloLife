@@ -17,9 +17,17 @@ export interface APIError {
 export const handleAPIError = (
   error: FetchBaseQueryError | { error: string },
 ): APIError => {
+  console.log('API Error received:', JSON.stringify(error, null, 2));
+
   if ('status' in error) {
     // Server responded with error status
     const { status, data } = error;
+    console.log(
+      'Error status:',
+      status,
+      'Error data:',
+      JSON.stringify(data, null, 2),
+    );
 
     switch (status) {
       case 400:
@@ -56,6 +64,7 @@ export const handleAPIError = (
     }
   } else if ('error' in error) {
     // Network error or other error
+    console.log('Network error:', error.error);
     if (error.error === 'FETCH_ERROR') {
       return {
         type: 'network_error',

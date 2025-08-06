@@ -10,11 +10,14 @@ export interface LoginCredentials {
 }
 
 export interface RegisterData {
+  username: string;
   email: string;
   password: string;
+  password_confirm: string;
   first_name: string;
   last_name: string;
   phone?: string;
+  role?: string;
 }
 
 export interface AuthResponse {
@@ -135,6 +138,9 @@ const baseQuery = fetchBaseQuery({
   },
 });
 
+// Debug: Log the base URL being used
+console.log('API Base URL:', Config.API_BASE_URL || getApiBaseUrl());
+
 // Custom base query with token refresh
 const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
   let result = await baseQuery(args, api, extraOptions);
@@ -188,11 +194,14 @@ export const apiSlice = createApi({
     }),
 
     register: builder.mutation<AuthResponse, RegisterData>({
-      query: userData => ({
-        url: '/auth/register/',
-        method: 'POST',
-        body: userData,
-      }),
+      query: userData => {
+        console.log('Registration request data:', JSON.stringify(userData));
+        return {
+          url: '/auth/register/',
+          method: 'POST',
+          body: userData,
+        };
+      },
       invalidatesTags: ['Auth'],
     }),
 

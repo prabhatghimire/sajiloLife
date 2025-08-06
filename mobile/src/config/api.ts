@@ -24,9 +24,14 @@ export const API_CONFIG = {
 
 // Get the appropriate base URL based on platform
 export const getApiBaseUrl = () => {
-  // You can add logic here to detect platform and environment
-  // For physical device, use production URL
+  // For physical device, use this:
   return API_CONFIG.production.baseUrl;
+
+  // For Android emulator, use this:
+  // return API_CONFIG.android.baseUrl;
+
+  // For iOS simulator, use this:
+  // return API_CONFIG.development.baseUrl;
 };
 
 // For Android emulator, use this:

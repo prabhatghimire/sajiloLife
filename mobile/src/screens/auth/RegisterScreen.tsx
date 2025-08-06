@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -14,14 +14,14 @@ import {
   Card,
   Title,
   Paragraph,
-  useTheme,
   SegmentedButtons,
 } from 'react-native-paper';
-import {useDispatch, useSelector} from 'react-redux';
-import {register, clearError} from '../../store/slices/authSlice';
-import {theme} from '../../theme';
+import { useDispatch, useSelector } from 'react-redux';
+import { clearError } from '../../store/slices/authSlice';
+import { theme } from '../../theme';
+import { useAuth } from '../../hooks/useAuth';
 
-const RegisterScreen = ({navigation}) => {
+const RegisterScreen = ({ navigation }) => {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -35,10 +35,12 @@ const RegisterScreen = ({navigation}) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const dispatch = useDispatch();
-  const {error, isLoading: authLoading} = useSelector(state => state.auth);
-  const appTheme = useTheme();
+  const { error } = useSelector((state: any) => state.auth);
+
+  // Use the new useAuth hook instead of the old Redux auth slice
+  const { register, isRegisterLoading, error: registerError } = useAuth();
 
   useEffect(() => {
     if (error) {
@@ -47,14 +49,29 @@ const RegisterScreen = ({navigation}) => {
     }
   }, [error, dispatch]);
 
+  useEffect(() => {
+    if (registerError) {
+      Alert.alert(
+        'Registration Error',
+        registerError.message || 'Registration failed',
+      );
+    }
+  }, [registerError]);
+
   const updateFormData = (field, value) => {
-    setFormData(prev => ({...prev, [field]: value}));
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleRegister = async () => {
     // Validation
-    if (!formData.username || !formData.email || !formData.password || 
-        !formData.passwordConfirm || !formData.firstName || !formData.lastName) {
+    if (
+      !formData.username ||
+      !formData.email ||
+      !formData.password ||
+      !formData.passwordConfirm ||
+      !formData.firstName ||
+      !formData.lastName
+    ) {
       Alert.alert('Error', 'Please fill in all required fields');
       return;
     }
@@ -92,9 +109,10 @@ const RegisterScreen = ({navigation}) => {
         role: formData.role,
       };
 
-      await dispatch(register(userData)).unwrap();
+      const result = await register(userData);
+      console.log('Registration result:', JSON.stringify(result));
       Alert.alert('Success', 'Account created successfully!', [
-        {text: 'OK', onPress: () => navigation.goBack()}
+        { text: 'OK', onPress: () => navigation.goBack() },
       ]);
     } catch (error) {
       console.log('Registration error:', error);
@@ -103,12 +121,12 @@ const RegisterScreen = ({navigation}) => {
     }
   };
 
-  const isValidEmail = (email) => {
+  const isValidEmail = email => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
-  const isValidPhone = (phone) => {
+  const isValidPhone = phone => {
     const phoneRegex = /^\+?[\d\s\-\(\)]{10,}$/;
     return phoneRegex.test(phone);
   };
@@ -120,10 +138,12 @@ const RegisterScreen = ({navigation}) => {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
-        keyboardShouldPersistTaps="handled">
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.content}>
           {/* Header */}
           <View style={styles.header}>
@@ -141,8 +161,8 @@ const RegisterScreen = ({navigation}) => {
                 value={formData.role}
                 onValueChange={value => updateFormData('role', value)}
                 buttons={[
-                  {value: 'customer', label: 'Customer'},
-                  {value: 'partner', label: 'Partner'},
+                  { value: 'customer', label: 'Customer' },
+                  { value: 'partner', label: 'Partner' },
                 ]}
                 style={styles.roleSelector}
               />
@@ -234,17 +254,21 @@ const RegisterScreen = ({navigation}) => {
               <Button
                 mode="contained"
                 onPress={handleRegister}
-                loading={isLoading || authLoading}
-                disabled={isLoading || authLoading}
+                loading={isLoading || isRegisterLoading}
+                disabled={isLoading || isRegisterLoading}
                 style={styles.registerButton}
-                contentStyle={styles.buttonContent}>
-                {isLoading || authLoading ? 'Creating Account...' : 'Create Account'}
+                contentStyle={styles.buttonContent}
+              >
+                {isLoading || isRegisterLoading
+                  ? 'Creating Account...'
+                  : 'Create Account'}
               </Button>
 
               <Button
                 mode="text"
                 onPress={handleBackToLogin}
-                style={styles.backButton}>
+                style={styles.backButton}
+              >
                 Already have an account? Sign In
               </Button>
             </Card.Content>
@@ -253,7 +277,8 @@ const RegisterScreen = ({navigation}) => {
           {/* Footer */}
           <View style={styles.footer}>
             <Text style={styles.footerText}>
-              By creating an account, you agree to our Terms of Service and Privacy Policy
+              By creating an account, you agree to our Terms of Service and
+              Privacy Policy
             </Text>
           </View>
         </View>
@@ -325,4 +350,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RegisterScreen; 
+export default RegisterScreen;
